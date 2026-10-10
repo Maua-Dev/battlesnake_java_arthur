@@ -45,7 +45,7 @@ public class Logic {
         java.util.Map<String, String> info = new java.util.HashMap<>();
         info.put("apiversion", "1");
         info.put("author", "Mr.Fr0gg");          // TODO: coloque aqui o SEU usuario do Battlesnake
-        info.put("color", "#8B0000");    // TODO: escolha a cor da sua cobra
+        info.put("color", "#0c0c0c");    // TODO: escolha a cor da sua cobra
         info.put("head", "all-seeing");  // TODO: escolha a cabeca
         info.put("tail", "mystic-moon");        // TODO: escolha a cauda
         return info;
