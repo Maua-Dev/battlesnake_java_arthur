@@ -76,6 +76,7 @@ jobs:
   deploy_app:
     name: 'Deploy | Deploy Application'
     runs-on: ubuntu-latest
+    if: github.ref_name == dev
     needs: [BootstrapBucketCreation, build_java] 
 
     permissions:      
