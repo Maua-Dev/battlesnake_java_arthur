@@ -177,7 +177,6 @@ public class Logic {
         boolean needsFood = state.getYou().getHealth() < 50;
         
         List<Coordinate> food = state.getBoard().getFood();
-        List<com.mauadev.code.entities.Snake> opponents = state.getBoard().getSnakes();
 
         Coordinate target = null;
         int mySize = state.getYou().getLength();
