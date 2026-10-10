@@ -139,7 +139,28 @@ public class Logic {
         }
 
         // TODO: Passo 3 — impedir que a cobra bata nas adversárias
-        // List<Snake> opponents = state.getBoard().getSnakes();
+        List<com.mauadev.code.entities.Snake> opponents = state.getBoard().getSnakes();
+        if (opponents != null) {
+            for (com.mauadev.code.entities.Snake opponent : opponents) {
+                List<Coordinate> opponentBody = opponent.getBody();
+                if (opponentBody != null) {
+                    for (Coordinate segment : opponentBody) {
+                        if (segment.getX() == myHead.getX() + 1 && segment.getY() == myHead.getY()) {
+                            isMoveSafe.remove("right");
+                        }
+                        if (segment.getX() == myHead.getX() - 1 && segment.getY() == myHead.getY()) {
+                            isMoveSafe.remove("left");
+                        }
+                        if (segment.getX() == myHead.getX() && segment.getY() == myHead.getY() + 1) {
+                            isMoveSafe.remove("up");
+                        }
+                        if (segment.getX() == myHead.getX() && segment.getY() == myHead.getY() - 1) {
+                            isMoveSafe.remove("down");
+                        }
+                    }
+                }
+            }
+        }
 
         // Sobrou alguma direcao segura?
         if (isMoveSafe.isEmpty()) {
@@ -149,12 +170,39 @@ public class Logic {
             return allMoves.get(ThreadLocalRandom.current().nextInt(allMoves.size()));
         }
 
-        // Escolhe uma direcao segura ao acaso.
-        String chosen = isMoveSafe.get(ThreadLocalRandom.current().nextInt(isMoveSafe.size()));
-
+        
         // TODO: Passo 4 - ir atras da comida em vez de sortear, para nao morrer de fome
         List<Coordinate> food = state.getBoard().getFood();
+        if (food != null && !food.isEmpty()) {
+            // Encontrar a comida mais proxima usando a Distancia de Manhattan
+            Coordinate closestFood = food.get(0);
+            int minDistance = Math.abs(closestFood.getX() - myHead.getX()) + Math.abs(closestFood.getY() - myHead.getY());
 
+            for (int i = 1; i < food.size(); i++) {
+                Coordinate f = food.get(i);
+                int distance = Math.abs(f.getX() - myHead.getX()) + Math.abs(f.getY() - myHead.getY());
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestFood = f;
+                }
+            }
+
+            // Filtrar movimentos seguros que aproximam a cobra da comida
+            List<String> preferredMoves = new ArrayList<>(isMoveSafe);
+            
+            if (closestFood.getX() < myHead.getX() && preferredMoves.contains("left")) {
+                return "left";
+            } else if (closestFood.getX() > myHead.getX() && preferredMoves.contains("right")) {
+                return "right";
+            } else if (closestFood.getY() < myHead.getY() && preferredMoves.contains("down")) {
+                return "down";
+            } else if (closestFood.getY() > myHead.getY() && preferredMoves.contains("up")) {
+                return "up";
+            }
+        }
+        
+        // Escolhe uma direcao segura ao acaso.
+        String chosen = isMoveSafe.get(ThreadLocalRandom.current().nextInt(isMoveSafe.size()));
         return chosen;
     }
 }
