@@ -153,7 +153,7 @@ public class Logic {
         String chosen = isMoveSafe.get(ThreadLocalRandom.current().nextInt(isMoveSafe.size()));
 
         // TODO: Passo 4 - ir atras da comida em vez de sortear, para nao morrer de fome
-        // List<Coordinate> food = state.getBoard().getFood();
+        List<Coordinate> food = state.getBoard().getFood();
 
         return chosen;
     }
