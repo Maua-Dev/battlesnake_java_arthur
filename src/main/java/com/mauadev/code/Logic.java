@@ -14,13 +14,13 @@ package com.mauadev.code;
 // para tras (ela morreria na hora). Os TODOs marcam os proximos passos.
 // Documentacao: https://docs.battlesnake.com
 
-import com.mauadev.code.entities.Coordinate;
-import com.mauadev.code.entities.GameState;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+
+import com.mauadev.code.entities.Coordinate;
+import com.mauadev.code.entities.GameState;
 
 /**
  * Logica da cobra. E AQUI que voce programa a inteligencia da snake.
@@ -44,10 +44,10 @@ public class Logic {
     public static java.util.Map<String, String> info() {
         java.util.Map<String, String> info = new java.util.HashMap<>();
         info.put("apiversion", "1");
-        info.put("author", "");          // TODO: coloque aqui o SEU usuario do Battlesnake
+        info.put("author", "Mr.Fr0gg");          // TODO: coloque aqui o SEU usuario do Battlesnake
         info.put("color", "#8B0000");    // TODO: escolha a cor da sua cobra
-        info.put("head", "tiger-king");  // TODO: escolha a cabeca
-        info.put("tail", "hook");        // TODO: escolha a cauda
+        info.put("head", "all-seeing");  // TODO: escolha a cabeca
+        info.put("tail", "mystic-moon");        // TODO: escolha a cauda
         return info;
     }
 
