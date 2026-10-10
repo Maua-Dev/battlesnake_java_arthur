@@ -171,36 +171,72 @@ public class Logic {
         }
 
         
-        // TODO: Passo 4 - ir atras da comida em vez de sortear, para nao morrer de fome
+        // TODO: Passo 4 - Atacar com estrategia
+        // --- 1. Definir prioridade de Fome vs Ofensiva ---
+        // Se a vida estiver baixa (< 60), a prioridade absoluta e comer. Se estiver alta, cacar!
+        boolean needsFood = state.getYou().getHealth() < 60;
+        
         List<Coordinate> food = state.getBoard().getFood();
-        if (food != null && !food.isEmpty()) {
-            // Encontrar a comida mais proxima usando a Distancia de Manhattan
-            Coordinate closestFood = food.get(0);
-            int minDistance = Math.abs(closestFood.getX() - myHead.getX()) + Math.abs(closestFood.getY() - myHead.getY());
 
-            for (int i = 1; i < food.size(); i++) {
-                Coordinate f = food.get(i);
-                int distance = Math.abs(f.getX() - myHead.getX()) + Math.abs(f.getY() - myHead.getY());
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestFood = f;
+        Coordinate target = null;
+
+        // Se precisa comer ou nao tem oponentes validos, o alvo e a comida mais proxima
+        if (needsFood || opponents == null || opponents.isEmpty()) {
+            if (food != null && !food.isEmpty()) {
+                target = food.get(0);
+                int minDist = Math.abs(target.getX() - myHead.getX()) + Math.abs(target.getY() - myHead.getY());
+                for (Coordinate f : food) {
+                    int d = Math.abs(f.getX() - myHead.getX()) + Math.abs(f.getY() - myHead.getY());
+                    if (d < minDist) {
+                        minDist = d;
+                        target = f;
+                    }
+                }
+            }
+        } else {
+            // Foco Ofensivo: Procurar a cabeca de uma cobra adversaria menor ou igual para cacar
+            Coordinate targetHead = null;
+            int minOppDist = 9999;
+            int mySize = state.getYou().getLength();
+
+            for (com.mauadev.code.entities.Snake op : opponents) {
+                // Nao olhar para si mesmo caso venha na lista
+                if (op.getId().equals(state.getYou().getId())) continue;
+
+                // Só atacar se formos maiores ou iguais (regra de sobrevivencia do Battlesnake)
+                if (op.getLength() <= mySize) {
+                    Coordinate opHead = op.getHead();
+                    int d = Math.abs(opHead.getX() - myHead.getX()) + Math.abs(opHead.getY() - myHead.getY());
+                    if (d < minOppDist) {
+                        minOppDist = d;
+                        targetHead = opHead;
+                    }
                 }
             }
 
-            // Filtrar movimentos seguros que aproximam a cobra da comida
+            // Se achou um alvo valido para atacar, va atras dele. Se nao, va atras de comida.
+            if (targetHead != null) {
+                target = targetHead;
+            } else if (food != null && !food.isEmpty()) {
+                target = food.get(0); // fallback para comida
+            }
+        }
+
+        // --- 2. Mover em direcao ao alvo escolhido (se houver alvo e movimento seguro) ---
+        if (target != null) {
             List<String> preferredMoves = new ArrayList<>(isMoveSafe);
-            
-            if (closestFood.getX() < myHead.getX() && preferredMoves.contains("left")) {
+
+            if (target.getX() < myHead.getX() && preferredMoves.contains("left")) {
                 return "left";
-            } else if (closestFood.getX() > myHead.getX() && preferredMoves.contains("right")) {
+            } else if (target.getX() > myHead.getX() && preferredMoves.contains("right")) {
                 return "right";
-            } else if (closestFood.getY() < myHead.getY() && preferredMoves.contains("down")) {
+            } else if (target.getY() < myHead.getY() && preferredMoves.contains("down")) {
                 return "down";
-            } else if (closestFood.getY() > myHead.getY() && preferredMoves.contains("up")) {
+            } else if (target.getY() > myHead.getY() && preferredMoves.contains("up")) {
                 return "up";
             }
         }
-        
+
         // Escolhe uma direcao segura ao acaso.
         String chosen = isMoveSafe.get(ThreadLocalRandom.current().nextInt(isMoveSafe.size()));
         return chosen;
