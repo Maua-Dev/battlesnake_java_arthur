@@ -174,55 +174,55 @@ public class Logic {
         // TODO: Passo 4 - Atacar com estrategia
         // --- 1. Definir prioridade de Fome vs Ofensiva ---
         // Se a vida estiver baixa (< 60), a prioridade absoluta e comer. Se estiver alta, cacar!
-        boolean needsFood = state.getYou().getHealth() < 60;
+        boolean needsFood = state.getYou().getHealth() < 50;
         
         List<Coordinate> food = state.getBoard().getFood();
+        List<com.mauadev.code.entities.Snake> opponents = state.getBoard().getSnakes();
 
         Coordinate target = null;
+        int mySize = state.getYou().getLength();
 
-        // Se precisa comer ou nao tem oponentes validos, o alvo e a comida mais proxima
-        if (needsFood || opponents == null || opponents.isEmpty()) {
+        // Verificar qual e o oponente mais proximo e o tamanho dele
+        com.mauadev.code.entities.Snake closestOpponent = null;
+        int minOppDist = 9999;
+
+        if (opponents != null) {
+            for (com.mauadev.code.entities.Snake op : opponents) {
+                if (op.getId().equals(state.getYou().getId())) continue; // Ignorar a si mesmo
+
+                Coordinate opHead = op.getHead();
+                int d = Math.abs(opHead.getX() - myHead.getX()) + Math.abs(opHead.getY() - myHead.getY());
+                if (d < minOppDist) {
+                    minOppDist = d;
+                    closestOpponent = op;
+                }
+            }
+        }
+
+        // --- 2. Definir o alvo com base no tamanho e na fome ---
+        // Se a vida esta baixa, ou se nao ha oponentes, ou SE SOMOS MENORES QUE O OPONENTE MAIS PROXIMO:
+        // O foco absoluto e comer para crescer e ficar maior!
+        boolean mustGrowFirst = (closestOpponent != null && mySize <= closestOpponent.getLength());
+
+        if (needsFood || mustGrowFirst || closestOpponent == null) {
+            // Ir atras da comida mais proxima
             if (food != null && !food.isEmpty()) {
                 target = food.get(0);
                 int minDist = Math.abs(target.getX() - myHead.getX()) + Math.abs(target.getY() - myHead.getY());
                 for (Coordinate f : food) {
-                    int d = Math.abs(f.getX() - myHead.getX()) + Math.abs(f.getY() - myHead.getY());
-                    if (d < minDist) {
-                        minDist = d;
+                    int dist = Math.abs(f.getX() - myHead.getX()) + Math.abs(f.getY() - myHead.getY());
+                    if (dist < minDist) {
+                        minDist = dist;
                         target = f;
                     }
                 }
             }
         } else {
-            // Foco Ofensivo: Procurar a cabeca de uma cobra adversaria menor ou igual para cacar
-            Coordinate targetHead = null;
-            int minOppDist = 9999;
-            int mySize = state.getYou().getLength();
-
-            for (com.mauadev.code.entities.Snake op : opponents) {
-                // Nao olhar para si mesmo caso venha na lista
-                if (op.getId().equals(state.getYou().getId())) continue;
-
-                // Só atacar se formos maiores ou iguais (regra de sobrevivencia do Battlesnake)
-                if (op.getLength() <= mySize) {
-                    Coordinate opHead = op.getHead();
-                    int d = Math.abs(opHead.getX() - myHead.getX()) + Math.abs(opHead.getY() - myHead.getY());
-                    if (d < minOppDist) {
-                        minOppDist = d;
-                        targetHead = opHead;
-                    }
-                }
-            }
-
-            // Se achou um alvo valido para atacar, va atras dele. Se nao, va atras de comida.
-            if (targetHead != null) {
-                target = targetHead;
-            } else if (food != null && !food.isEmpty()) {
-                target = food.get(0); // fallback para comida
-            }
+            // Se ja somos MAIORES que o oponente mais proximo e a vida esta segura: Foco ofensivo!
+            target = closestOpponent.getHead();
         }
 
-        // --- 2. Mover em direcao ao alvo escolhido (se houver alvo e movimento seguro) ---
+        // --- 3. Mover em direcao ao alvo escolhido (se houver alvo e movimento seguro) ---
         if (target != null) {
             List<String> preferredMoves = new ArrayList<>(isMoveSafe);
 
